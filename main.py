@@ -1,4 +1,4 @@
-from chatgpt_dmenu import ChatGPTDMenuApp
+from src.app import ChatGPTDMenuApp
 
 if __name__ == "__main__":
     app = ChatGPTDMenuApp()
