@@ -6,7 +6,33 @@ import sys
 import yaml
 import tempfile
 from typing import Optional, List, Dict
+import logging
 
+import logging
+from typing import Literal
+
+LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
+def setup_logging(level: str = "INFO", logfile: str = "/tmp/chatgpt-dmenu.log") -> None:
+    """
+    Sets up logging based on level and logfile.
+
+    Args:
+        level (str): Logging level string (e.g., DEBUG, INFO).
+        logfile (str): Full path to the log file.
+    """
+    numeric_level = getattr(logging, level.upper(), logging.INFO)
+
+    logging.basicConfig(
+        level=numeric_level,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler(logfile),
+            logging.StreamHandler()
+        ]
+    )
+
+    logging.debug(f"Logging initialized at level: {level}, output to {logfile}")
 
 class ConfigLoader:
     """
@@ -22,8 +48,10 @@ class ConfigLoader:
     def _load_config(self) -> dict:
         """Loads the YAML config file into a dictionary."""
         if not os.path.exists(self.config_path):
+            logging.error(f"Config file not found: {self.config_path}")
             raise FileNotFoundError(f"Config file not found: {self.config_path}")
         with open(self.config_path, "r") as f:
+            logging.debug(f"Loading config from {self.config_path}")
             return yaml.safe_load(f)
 
     def get(self, key: str, default: Optional[object] = None) -> object:
@@ -86,6 +114,7 @@ class ContextManager:
             str: Final formatted prompt.
         """
         prompt = self.contexts.get(name, "")
+        logging.debug(f"Building prompt for context='{name}', audience='{audience}', tone='{tone}', person='{person}'")
         return (
             prompt.replace("{audience}", audience or "the recipient")
                   .replace("{tone}", tone or "friendly but professional")
@@ -99,6 +128,7 @@ class Clipboard:
     @staticmethod
     def get() -> str:
         """Gets the current clipboard contents."""
+        logging.debug("Reading from clipboard...")
         result = subprocess.run(["xclip", "-selection", "clipboard", "-o"], stdout=subprocess.PIPE)
         return result.stdout.decode()
 
@@ -110,6 +140,7 @@ class Clipboard:
         Args:
             text (str): Text to copy to clipboard.
         """
+        logging.debug("Writing to clipboard...")
         subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode())
 
 
@@ -166,6 +197,7 @@ class Notifier:
             text (str): Text to display.
             title (str): Title for popup window (ignored in this version).
         """
+        logging.info("Opening Neovim popup with response...")
         with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
             tmp.write(text)
             tmp_path = tmp.name
@@ -213,14 +245,21 @@ class ChatGPTClient:
                 {"role": "user", "content": user_input}
             ]
 
+            logging.info("Sending request to ChatGPT...")
+            logging.debug(f"System prompt: {system_prompt}")
+            logging.debug(f"User input: {user_input[:200]}")  # Don't log full text
+
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=self.temperature
             )
+
+            logging.info("Received response from ChatGPT.")
             return response.choices[0].message.content.strip()
 
         except Exception as e:
+            logging.error(f"OpenAI API error: {e}")
             raise RuntimeError(f"API error: {e}")
 
 
@@ -230,6 +269,11 @@ class ChatGPTDMenuApp:
     """
     def __init__(self) -> None:
         self.config = ConfigLoader()
+
+        log_level = self.config.get("log_level", "INFO")
+        log_file = self.config.get("log_file", "/tmp/chatgpt-dmenu.log")
+        setup_logging(level=log_level, logfile=log_file)
+
         self.context_manager = ContextManager(self.config)
         self.chatgpt = ChatGPTClient(self.config)
         self.ui = DMenuUI()
@@ -238,14 +282,19 @@ class ChatGPTDMenuApp:
 
     def run(self) -> None:
         """Main run loop: handles prompt selection, formatting, querying GPT, and displaying result."""
+        logging.info("Running ChatGPTDMenuApp...")
+
         choice = self.ui.select_option(self.context_manager.get_contexts())
+        logging.debug(f"User selected context: {choice}")
         if not choice:
+            logging.warning("No context selected. Exiting.")
             sys.exit(0)
 
         if choice == "Business Email":
             audience = self.get_dmenu_or_custom("audiences", "Target Audience:")
             tone = self.get_dmenu_or_custom("tones", "Tone:")
             person = self.get_dmenu_or_custom("persons", "Person to address:")
+            logging.debug(f"User inputs - Audience: {audience}, Tone: {tone}, Person: {person}")
             prompt = self.context_manager.get_prompt(choice, audience, tone, person)
         else:
             prompt = self.context_manager.get_prompt(choice)
