@@ -4,6 +4,7 @@ from openai.types.chat import ChatCompletionMessageParam
 import os
 import sys
 import yaml
+import tempfile
 
 class ConfigLoader:
     def __init__(self, path=None):
@@ -57,12 +58,15 @@ class DMenuUI:
 
 
 class Notifier:
-    @staticmethod
-    def popup(text, title="ChatGPT Result"):
-        subprocess.run([
-            "zenity", "--text-info", "--title", title,
-            "--width=600", "--height=400"
-        ], input=text.encode())
+    def __init__(self, config: ConfigLoader):
+        self.terminal = config.get("terminal", "alacritty")
+
+    def popup(self, text, title="ChatGPT Result"):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+            tmp.write(text)
+            tmp_path = tmp.name
+
+        subprocess.Popen([self.terminal, "-e", "nvim", tmp_path])
 
     @staticmethod
     def notify(summary, body):
@@ -100,7 +104,7 @@ class ChatGPTDMenuApp:
         self.chatgpt = ChatGPTClient(self.config)
         self.ui = DMenuUI()
         self.clipboard = Clipboard()
-        self.notifier = Notifier()
+        self.notifier = Notifier(self.config)
 
     def run(self):
         choice = self.ui.select_option(self.context_manager.get_contexts())
@@ -113,7 +117,7 @@ class ChatGPTDMenuApp:
         try:
             output = self.chatgpt.chat(system_prompt, user_input)
             self.clipboard.set(output)
-            # self.notifier.popup(output, title=f"ChatGPT: {choice}")
+            self.notifier.popup(output, title=f"ChatGPT: {choice}")
             self.notifier.notify("ChatGPT", "Response copied to clipboard")
         except RuntimeError as e:
             self.notifier.notify("ChatGPT Error", str(e))
