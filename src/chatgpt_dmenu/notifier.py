@@ -1,7 +1,9 @@
+import logging
 import subprocess
 import tempfile
-import logging
+
 from chatgpt_dmenu.config_loader import ConfigLoader
+
 
 class Notifier:
     """
@@ -10,6 +12,7 @@ class Notifier:
     Args:
         config (ConfigLoader): Configuration loader to get terminal command.
     """
+
     def __init__(self, config: ConfigLoader) -> None:
         self.terminal: str = config.get("terminal", "alacritty")
 
@@ -22,7 +25,9 @@ class Notifier:
             title (str): Title for popup window (ignored in this version).
         """
         logging.info("Opening Neovim popup with response...")
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".txt", mode="w", encoding="utf-8"
+        ) as tmp:
             tmp.write(text)
             tmp_path = tmp.name
 
@@ -37,4 +42,4 @@ class Notifier:
             summary (str): Notification title.
             body (str): Notification body text.
         """
-        subprocess.run(["notify-send", summary, body])
+        subprocess.run(["notify-send", summary, body], check=False)

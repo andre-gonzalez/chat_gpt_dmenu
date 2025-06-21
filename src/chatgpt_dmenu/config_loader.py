@@ -1,9 +1,11 @@
-import os
-import yaml
 import logging
-from typing import Optional, List, Dict, Literal
+import os
+from typing import Literal
+
+import yaml
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
 
 def setup_logging(level: str = "INFO", logfile: str = "/tmp/chatgpt-dmenu.log") -> None:
     """
@@ -18,13 +20,11 @@ def setup_logging(level: str = "INFO", logfile: str = "/tmp/chatgpt-dmenu.log") 
     logging.basicConfig(
         level=numeric_level,
         format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler(logfile),
-            logging.StreamHandler()
-        ]
+        handlers=[logging.FileHandler(logfile), logging.StreamHandler()],
     )
 
     logging.debug(f"Logging initialized at level: {level}, output to {logfile}")
+
 
 class ConfigLoader:
     """
@@ -33,10 +33,13 @@ class ConfigLoader:
     Args:
         path (Optional[str]): Optional path to the configuration file. If None, defaults to ~/.config/chatgpt-dmenu/config.yaml.
     """
-    def __init__(self, path: Optional[str] = None) -> None:
+
+    def __init__(self, path: str | None = None) -> None:
         home = os.environ.get("HOME")
         logging.debug(f"ENV HOME={home}")
-        self.config_path = path or os.path.expanduser("~/.config/chatgpt-dmenu/config.yaml")
+        self.config_path = path or os.path.expanduser(
+            "~/.config/chatgpt-dmenu/config.yaml"
+        )
         logging.debug(f"Looking for config at {self.config_path}")
         if not os.path.exists(self.config_path):
             logging.error(f"Config file NOT found at {self.config_path}")
@@ -49,11 +52,11 @@ class ConfigLoader:
         if not os.path.exists(self.config_path):
             logging.error(f"Config file not found: {self.config_path}")
             raise FileNotFoundError(f"Config file not found: {self.config_path}")
-        with open(self.config_path, "r") as f:
+        with open(self.config_path) as f:
             logging.debug(f"Loading config from {self.config_path}")
             return yaml.safe_load(f)
 
-    def get(self, key: str, default: Optional[object] = None) -> object:
+    def get(self, key: str, default: object | None = None) -> object:
         """
         Retrieves a value from the config.
 
@@ -66,11 +69,11 @@ class ConfigLoader:
         """
         return self.config.get(key, default)
 
-    def get_contexts(self) -> Dict[str, str]:
+    def get_contexts(self) -> dict[str, str]:
         """Returns the dictionary of named system prompts (contexts)."""
         return self.config.get("contexts", {})
 
-    def get_list(self, key: str, default: Optional[List[str]] = None) -> List[str]:
+    def get_list(self, key: str, default: list[str] | None = None) -> list[str]:
         """
         Retrieves a list from the config.
 

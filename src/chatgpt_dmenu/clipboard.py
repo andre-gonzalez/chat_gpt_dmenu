@@ -1,5 +1,6 @@
-import subprocess
 import logging
+import subprocess
+
 
 class Clipboard:
     """Handles clipboard interaction using xclip."""
@@ -8,7 +9,11 @@ class Clipboard:
     def get() -> str:
         """Gets the current clipboard contents."""
         logging.debug("Reading from clipboard...")
-        result = subprocess.run(["xclip", "-selection", "clipboard", "-o"], stdout=subprocess.PIPE)
+        result = subprocess.run(
+            ["xclip", "-selection", "clipboard", "-o"],
+            stdout=subprocess.PIPE,
+            check=False,
+        )
         return result.stdout.decode()
 
     @staticmethod
@@ -20,4 +25,6 @@ class Clipboard:
             text (str): Text to copy to clipboard.
         """
         logging.debug("Writing to clipboard...")
-        subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode())
+        subprocess.run(
+            ["xclip", "-selection", "clipboard"], input=text.encode(), check=False
+        )

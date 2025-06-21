@@ -1,11 +1,11 @@
 import subprocess
-from typing import List
+
 
 class DMenuUI:
     """Handles user interaction via dmenu."""
 
     @staticmethod
-    def select_option(options: List[str], prompt: str = "Select option:") -> str:
+    def select_option(options: list[str], prompt: str = "Select option:") -> str:
         """
         Displays a dmenu prompt and returns selected value.
 
@@ -16,9 +16,12 @@ class DMenuUI:
         Returns:
             str: Selected option.
         """
-        result = subprocess.run(["dmenu", "-p", prompt],
-                                input="\n".join(options).encode(),
-                                stdout=subprocess.PIPE)
+        result = subprocess.run(
+            ["dmenu", "-p", prompt],
+            input="\n".join(options).encode(),
+            stdout=subprocess.PIPE,
+            check=False,
+        )
         return result.stdout.decode().strip()
 
     @staticmethod
@@ -32,5 +35,7 @@ class DMenuUI:
         Returns:
             str: User input.
         """
-        result = subprocess.run(["dmenu", "-p", prompt], input=b"", stdout=subprocess.PIPE)
+        result = subprocess.run(
+            ["dmenu", "-p", prompt], input=b"", stdout=subprocess.PIPE, check=False
+        )
         return result.stdout.decode().strip()

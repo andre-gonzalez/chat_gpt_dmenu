@@ -1,16 +1,19 @@
-import sys
 import logging
+import sys
+
+from chatgpt_dmenu.chatgpt_client import ChatGPTClient
+from chatgpt_dmenu.clipboard import Clipboard
 from chatgpt_dmenu.config_loader import ConfigLoader, setup_logging
 from chatgpt_dmenu.context_manager import ContextManager
-from chatgpt_dmenu.chatgpt_client import ChatGPTClient
 from chatgpt_dmenu.dmenu_ui import DMenuUI
-from chatgpt_dmenu.clipboard import Clipboard
 from chatgpt_dmenu.notifier import Notifier
+
 
 class ChatGPTDMenuApp:
     """
     Main application orchestrating user input, GPT prompt building, and displaying results.
     """
+
     def __init__(self) -> None:
         self.config = ConfigLoader()
 
@@ -38,7 +41,9 @@ class ChatGPTDMenuApp:
             audience = self.get_dmenu_or_custom("audiences", "Target Audience:")
             tone = self.get_dmenu_or_custom("tones", "Tone:")
             person = self.get_dmenu_or_custom("persons", "Person to address:")
-            logging.debug(f"User inputs - Audience: {audience}, Tone: {tone}, Person: {person}")
+            logging.debug(
+                f"User inputs - Audience: {audience}, Tone: {tone}, Person: {person}"
+            )
             prompt = self.context_manager.get_prompt(choice, audience, tone, person)
         else:
             prompt = self.context_manager.get_prompt(choice)

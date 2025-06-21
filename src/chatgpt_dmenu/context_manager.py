@@ -1,6 +1,7 @@
 import logging
-from typing import Optional, List, Dict
+
 from chatgpt_dmenu.config_loader import ConfigLoader
+
 
 class ContextManager:
     """
@@ -9,15 +10,21 @@ class ContextManager:
     Args:
         config (ConfigLoader): Instance of ConfigLoader containing the context config.
     """
-    def __init__(self, config: ConfigLoader) -> None:
-        self.contexts: Dict[str, str] = config.get_contexts()
 
-    def get_contexts(self) -> List[str]:
+    def __init__(self, config: ConfigLoader) -> None:
+        self.contexts: dict[str, str] = config.get_contexts()
+
+    def get_contexts(self) -> list[str]:
         """Returns the list of context names."""
         return list(self.contexts.keys())
 
-    def get_prompt(self, name: str, audience: Optional[str] = None,
-                   tone: Optional[str] = None, person: Optional[str] = None) -> str:
+    def get_prompt(
+        self,
+        name: str,
+        audience: str | None = None,
+        tone: str | None = None,
+        person: str | None = None,
+    ) -> str:
         """
         Returns a context prompt with placeholders filled.
 
@@ -31,9 +38,11 @@ class ContextManager:
             str: Final formatted prompt.
         """
         prompt = self.contexts.get(name, "")
-        logging.debug(f"Building prompt for context='{name}', audience='{audience}', tone='{tone}', person='{person}'")
+        logging.debug(
+            f"Building prompt for context='{name}', audience='{audience}', tone='{tone}', person='{person}'"
+        )
         return (
             prompt.replace("{audience}", audience or "the recipient")
-                  .replace("{tone}", tone or "friendly but professional")
-                  .replace("{person}", person or "there")
+            .replace("{tone}", tone or "friendly but professional")
+            .replace("{person}", person or "there")
         )
