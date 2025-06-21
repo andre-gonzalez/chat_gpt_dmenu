@@ -1,11 +1,11 @@
 import sys
 import logging
-from src.config_loader import ConfigLoader, setup_logging
-from src.context_manager import ContextManager
-from src.chatgpt_client import ChatGPTClient
-from src.dmenu_ui import DMenuUI
-from src.clipboard import Clipboard
-from src.notifier import Notifier
+from chatgpt_dmenu.config_loader import ConfigLoader, setup_logging
+from chatgpt_dmenu.context_manager import ContextManager
+from chatgpt_dmenu.chatgpt_client import ChatGPTClient
+from chatgpt_dmenu.dmenu_ui import DMenuUI
+from chatgpt_dmenu.clipboard import Clipboard
+from chatgpt_dmenu.notifier import Notifier
 
 class ChatGPTDMenuApp:
     """

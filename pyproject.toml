@@ -1,0 +1,25 @@
+[project]
+name = "chatgpt-dmenu"
+version = "0.1.0"
+description = "A dmenu wrapper for ChatGPT with context-based prompts"
+authors = [{ name = "André Gonzalez", email = "lopescg@gmail.com" }]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+dependencies = [
+    "openai>=1.0.0",
+    "pyyaml",
+]
+
+[project.scripts]
+chatgpt-dmenu = "chatgpt_dmenu.main:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

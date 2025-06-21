@@ -1,7 +1,7 @@
 import subprocess
 import tempfile
 import logging
-from src.config_loader import ConfigLoader
+from chatgpt_dmenu.config_loader import ConfigLoader
 
 class Notifier:
     """

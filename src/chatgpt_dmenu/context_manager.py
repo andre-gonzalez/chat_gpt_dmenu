@@ -1,6 +1,6 @@
 import logging
 from typing import Optional, List, Dict
-from src.config_loader import ConfigLoader
+from chatgpt_dmenu.config_loader import ConfigLoader
 
 class ContextManager:
     """

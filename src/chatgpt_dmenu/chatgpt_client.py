@@ -2,7 +2,7 @@ import logging
 from typing import List
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from src.config_loader import ConfigLoader
+from chatgpt_dmenu.config_loader import ConfigLoader
 
 class ChatGPTClient:
 
