@@ -19,14 +19,13 @@ class ConfigLoader:
     def get(self, key, default=None):
         return self.config.get(key, default)
 
+    def get_contexts(self):
+        return self.config.get("contexts", {})
+
 
 class ContextManager:
-    def __init__(self):
-        self.contexts = {
-            "Business Email": "You are an expert business communication assistant. Revise the following email in perfect business English.",
-            "Slack Message": "You are a casual but clear communication expert. Rewrite the following message to fit Slack.",
-            "Code Assistant": "You are a helpful programming assistant. Improve or explain the code given."
-        }
+    def __init__(self, config: ConfigLoader):
+        self.contexts = config.get_contexts()
 
     def get_contexts(self):
         return list(self.contexts.keys())
@@ -97,7 +96,7 @@ class ChatGPTClient:
 class ChatGPTDMenuApp:
     def __init__(self):
         self.config = ConfigLoader()
-        self.context_manager = ContextManager()
+        self.context_manager = ContextManager(self.config)
         self.chatgpt = ChatGPTClient(self.config)
         self.ui = DMenuUI()
         self.clipboard = Clipboard()

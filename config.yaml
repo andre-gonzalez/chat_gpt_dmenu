@@ -1,3 +1,12 @@
 api-key: "<YOUR-API-KEY>"
 model: "gpt-4.1-nano"
 temperature: 0.7
+terminal: "alacritty"
+
+contexts:
+  Business Email: >
+    You are an expert business communication assistant. Revise the following email in perfect business English.
+  Slack Message: >
+    You are a casual but clear communication expert. Rewrite the following message to fit Slack.
+  Code Assistant: >
+    You are a helpful programming assistant. Improve or explain the code given.
