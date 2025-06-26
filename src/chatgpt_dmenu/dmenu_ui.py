@@ -1,11 +1,18 @@
+import shutil
 import subprocess
 
 
 class DMenuUI:
     """Handles user interaction via dmenu."""
 
-    @staticmethod
-    def select_option(options: list[str], prompt: str = "Select option:") -> str:
+    def __init__(self) -> None:
+        dmenu = shutil.which("dmenu")
+        if dmenu is None:
+            msg = "dmenu not found in PATH"
+            raise FileNotFoundError(msg)
+        self.dmenu: str = dmenu
+
+    def select_option(self, options: list[str], prompt: str = "Select option:") -> str:
         """
         Displays a dmenu prompt and returns selected value.
 
@@ -17,15 +24,16 @@ class DMenuUI:
             str: Selected option.
         """
         result = subprocess.run(
-            ["dmenu", "-p", prompt],
-            input="\n".join(options).encode(),
+            [self.dmenu, "-p", prompt],
+            input="\n".join(options),
             stdout=subprocess.PIPE,
+            text=True,
             check=False,
         )
-        return result.stdout.decode().strip()
 
-    @staticmethod
-    def input_box(prompt: str = "Enter value:") -> str:
+        return result.stdout.strip()
+
+    def input_box(self, prompt: str = "Enter value:") -> str:
         """
         Displays a dmenu input prompt for free text.
 
@@ -36,6 +44,10 @@ class DMenuUI:
             str: User input.
         """
         result = subprocess.run(
-            ["dmenu", "-p", prompt], input=b"", stdout=subprocess.PIPE, check=False
+            [self.dmenu, "-p", prompt],
+            input=b"",
+            stdout=subprocess.PIPE,
+            text=True,
+            check=False,
         )
         return result.stdout.decode().strip()

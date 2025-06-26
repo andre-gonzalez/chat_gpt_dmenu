@@ -1,8 +1,11 @@
 import logging
+import shutil
 import subprocess
 import tempfile
 
 from chatgpt_dmenu.config_loader import ConfigLoader
+
+logger = logging.getLogger(__name__)
 
 
 class Notifier:
@@ -14,17 +17,16 @@ class Notifier:
     """
 
     def __init__(self, config: ConfigLoader) -> None:
-        self.terminal: str = config.get("terminal", "alacritty")
+        self.terminal: str = str(config.get("terminal", "alacritty"))
 
-    def popup(self, text: str, title: str = "ChatGPT Result") -> None:
+    def popup(self, text: str) -> None:
         """
         Opens a temporary file in Neovim inside a terminal window.
 
         Args:
             text (str): Text to display.
-            title (str): Title for popup window (ignored in this version).
         """
-        logging.info("Opening Neovim popup with response...")
+        logger.info("Opening Neovim popup with response...")
         with tempfile.NamedTemporaryFile(
             delete=False, suffix=".txt", mode="w", encoding="utf-8"
         ) as tmp:
@@ -42,4 +44,5 @@ class Notifier:
             summary (str): Notification title.
             body (str): Notification body text.
         """
-        subprocess.run(["notify-send", summary, body], check=False)
+        notify_send = shutil.which("notify-send") or "notify-send"
+        subprocess.run([notify_send, summary, body], check=False)

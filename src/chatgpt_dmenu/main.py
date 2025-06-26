@@ -1,6 +1,6 @@
-from .app import ChatGPTDMenuApp
+from chatgpt_dmenu.app import ChatGPTDMenuApp
 
 
-def main():
+def main() -> None:
     app = ChatGPTDMenuApp()
     app.run()

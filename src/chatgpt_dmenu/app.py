@@ -1,5 +1,6 @@
 import logging
 import sys
+import tempfile
 
 from chatgpt_dmenu.chatgpt_client import ChatGPTClient
 from chatgpt_dmenu.clipboard import Clipboard
@@ -8,17 +9,24 @@ from chatgpt_dmenu.context_manager import ContextManager
 from chatgpt_dmenu.dmenu_ui import DMenuUI
 from chatgpt_dmenu.notifier import Notifier
 
+logger = logging.getLogger(__name__)
+
 
 class ChatGPTDMenuApp:
     """
-    Main application orchestrating user input, GPT prompt building, and displaying results.
+    Main application orchestrating:
+        - user input,
+        - GPT prompt building,
+        - and displaying results.
     """
 
     def __init__(self) -> None:
         self.config = ConfigLoader()
 
-        log_level = self.config.get("log_level", "INFO")
-        log_file = self.config.get("log_file", "/tmp/chatgpt-dmenu.log")
+        log_level = str(self.config.get("log_level", "INFO"))
+        log_file = str(
+            self.config.get("log_file", tempfile.gettempdir() + "/chatgpt-dmenu.log")
+        )
         setup_logging(level=log_level, logfile=log_file)
 
         self.context_manager = ContextManager(self.config)
@@ -28,21 +36,30 @@ class ChatGPTDMenuApp:
         self.notifier = Notifier(self.config)
 
     def run(self) -> None:
-        """Main run loop: handles prompt selection, formatting, querying GPT, and displaying result."""
-        logging.info("Running ChatGPTDMenuApp...")
+        """
+        Main run loop:
+            - handles prompt selection,
+            - formatting,
+            - querying GPT,
+            - and displaying result.
+        """
+        logger.info("Running ChatGPTDMenuApp...")
 
         choice = self.ui.select_option(self.context_manager.get_contexts())
-        logging.debug(f"User selected context: {choice}")
+        logger.debug("User selected context: %s", choice)
         if not choice:
-            logging.warning("No context selected. Exiting.")
+            logger.warning("No context selected. Exiting.")
             sys.exit(0)
 
         if choice == "Business Email":
             audience = self.get_dmenu_or_custom("audiences", "Target Audience:")
             tone = self.get_dmenu_or_custom("tones", "Tone:")
             person = self.get_dmenu_or_custom("persons", "Person to address:")
-            logging.debug(
-                f"User inputs - Audience: {audience}, Tone: {tone}, Person: {person}"
+            logger.debug(
+                "User inputs - Audience: %s, Tone: %s, Person: %s",
+                audience,
+                tone,
+                person,
             )
             prompt = self.context_manager.get_prompt(choice, audience, tone, person)
         else:
@@ -53,11 +70,12 @@ class ChatGPTDMenuApp:
         try:
             output = self.chatgpt.chat(prompt, user_input)
             self.clipboard.set(output)
-            self.notifier.popup(output, title=f"ChatGPT: {choice}")
+            self.notifier.popup(output)
             self.notifier.notify("ChatGPT", "Response copied to clipboard")
         except RuntimeError as e:
             self.notifier.notify("ChatGPT Error", str(e))
-            print(str(e))
+            error_msg = str(e)
+            logger.exception("API call failed: %s", error_msg)
 
     def get_dmenu_or_custom(self, key: str, prompt: str) -> str:
         """

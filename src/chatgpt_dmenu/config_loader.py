@@ -1,13 +1,20 @@
 import logging
 import os
+import tempfile
+from pathlib import Path
 from typing import Literal
 
 import yaml
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
+logger = logging.getLogger(__name__)
 
-def setup_logging(level: str = "INFO", logfile: str = "/tmp/chatgpt-dmenu.log") -> None:
+
+def setup_logging(
+    level: str = "INFO",
+    logfile: str = str(Path(tempfile.gettempdir()) / "chatgpt-dmenu.log"),
+) -> None:
     """
     Sets up logging based on level and logfile.
 
@@ -23,7 +30,7 @@ def setup_logging(level: str = "INFO", logfile: str = "/tmp/chatgpt-dmenu.log") 
         handlers=[logging.FileHandler(logfile), logging.StreamHandler()],
     )
 
-    logging.debug(f"Logging initialized at level: {level}, output to {logfile}")
+    logger.debug("Logging initialized at level: %s, output to %s", level, logfile)
 
 
 class ConfigLoader:
@@ -31,29 +38,36 @@ class ConfigLoader:
     Loads and provides access to configuration data from a YAML file.
 
     Args:
-        path (Optional[str]): Optional path to the configuration file. If None, defaults to ~/.config/chatgpt-dmenu/config.yaml.
+        path (Optional[str]): Optional path to the configuration file.
+            If None, defaults to ~/.config/chatgpt-dmenu/config.yaml.
     """
 
     def __init__(self, path: str | None = None) -> None:
         home = os.environ.get("HOME")
-        logging.debug(f"ENV HOME={home}")
-        self.config_path = path or os.path.expanduser(
-            "~/.config/chatgpt-dmenu/config.yaml"
+        logger.debug("ENV HOME=%s", home)
+
+        self.config_path = (
+            Path(path) if path else Path.home() / ".config/chatgpt-dmenu/config.yaml"
         )
-        logging.debug(f"Looking for config at {self.config_path}")
-        if not os.path.exists(self.config_path):
-            logging.error(f"Config file NOT found at {self.config_path}")
-        else:
-            logging.info(f"Config file found at {self.config_path}")
-            self.config = self._load_config()
+        logger.debug("Looking for config at %s", self.config_path)
+
+        if not self.config_path.exists():
+            msg = f"Config file not found: {self.config_path}"
+            logger.error(msg)
+            raise FileNotFoundError(msg)
+
+        logger.info("Config file found at %s", self.config_path)
+        self.config = self._load_config()
 
     def _load_config(self) -> dict:
         """Loads the YAML config file into a dictionary."""
-        if not os.path.exists(self.config_path):
-            logging.error(f"Config file not found: {self.config_path}")
-            raise FileNotFoundError(f"Config file not found: {self.config_path}")
-        with open(self.config_path) as f:
-            logging.debug(f"Loading config from {self.config_path}")
+        if not self.config_path.exists():
+            msg = "Config file not found: %s", self.config_path
+            logger.error(msg)
+            raise FileNotFoundError(msg)
+
+        with self.config_path.open() as f:
+            logger.debug("Loading config from %s", self.config_path)
             return yaml.safe_load(f)
 
     def get(self, key: str, default: object | None = None) -> object:

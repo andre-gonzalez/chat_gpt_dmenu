@@ -32,12 +32,16 @@ target-version = ["py311"]
 line-length = 88
 target-version = "py311"
 fix = true
+
+[tool.ruff.lint]
 select = ["ALL"]
 ignore = [
   "ANN101",  # Missing type annotation for self
   "ANN102",  # Missing type annotation for cls
   "D",       # pydocstyle docstring checks (optional)
   "COM812",  # Conflicts with black
+  "S603",    # For this project it makes sense igonring this, all input is validated
+  "TRY301",  # Not necessary for this simple project
 ]
 
 [tool.ruff.format]
@@ -61,5 +65,6 @@ dev = [
   "black",
   "ruff",
   "mypy",
-  "isort"
+  "isort",
+  "types-PyYAML",
 ]

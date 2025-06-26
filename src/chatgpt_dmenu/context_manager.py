@@ -2,6 +2,8 @@ import logging
 
 from chatgpt_dmenu.config_loader import ConfigLoader
 
+logger = logging.getLogger(__name__)
+
 
 class ContextManager:
     """
@@ -38,8 +40,12 @@ class ContextManager:
             str: Final formatted prompt.
         """
         prompt = self.contexts.get(name, "")
-        logging.debug(
-            f"Building prompt for context='{name}', audience='{audience}', tone='{tone}', person='{person}'"
+        logger.debug(
+            "Building prompt for context='%s', audience='%s', tone='%s', person='%s'",
+            name,
+            audience,
+            tone,
+            person,
         )
         return (
             prompt.replace("{audience}", audience or "the recipient")
