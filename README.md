@@ -42,10 +42,7 @@ Then, clone and install the project:
 ```bash
 git clone https://github.com/yourusername/chatgpt-dmenu.git
 cd chatgpt-dmenu
-python -m venv .env
-source .env/bin/activate
-pip install --upgrade pip
-pip install --editable .
+pipx install .
 ```
 
 This will install the CLI tool as chatgpt-dmenu.
