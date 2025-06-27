@@ -69,7 +69,8 @@ class ChatGPTDMenuApp:
 
         try:
             output = self.chatgpt.chat(prompt, user_input)
-            self.clipboard.set(output)
+            main_text = output.split("---")[0].strip()
+            self.clipboard.set(main_text)
             self.notifier.popup(output)
             self.notifier.notify("ChatGPT", "Response copied to clipboard")
         except RuntimeError as e:
