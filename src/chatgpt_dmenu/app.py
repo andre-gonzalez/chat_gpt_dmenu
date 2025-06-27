@@ -51,7 +51,7 @@ class ChatGPTDMenuApp:
             logger.warning("No context selected. Exiting.")
             sys.exit(0)
 
-        if choice == "Business Email":
+        if choice in ["Business Email", "Slack Message"]:
             audience = self.get_dmenu_or_custom("audiences", "Target Audience:")
             tone = self.get_dmenu_or_custom("tones", "Tone:")
             person = self.get_dmenu_or_custom("persons", "Person to address:")
