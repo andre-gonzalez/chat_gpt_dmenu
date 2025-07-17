@@ -1,6 +1,6 @@
 [project]
 name = "chatgpt-dmenu"
-version = "0.1.0"
+version = "0.1.1"
 description = "A dmenu wrapper for ChatGPT with context-based prompts"
 authors = [{ name = "André Gonzalez", email = "lopescg@gmail.com" }]
 readme = "README.md"

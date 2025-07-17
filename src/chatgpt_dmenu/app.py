@@ -54,13 +54,16 @@ class ChatGPTDMenuApp:
         if choice in ["Business Email", "Slack Message"]:
             audience = self.get_dmenu_or_custom("audiences", "Target Audience:")
             tone = self.get_dmenu_or_custom("tones", "Tone:")
-            person = self.get_dmenu_or_custom("persons", "Person to address:")
-            logger.debug(
-                "User inputs - Audience: %s, Tone: %s, Person: %s",
-                audience,
-                tone,
-                person,
-            )
+            if choice in ["Business Email"]:
+                person = self.get_dmenu_or_custom("persons", "Person to address:")
+                logger.debug(
+                    "User inputs - Audience: %s, Tone: %s, Person: %s",
+                    audience,
+                    tone,
+                    person,
+                )
+            else:
+                person = ""
             prompt = self.context_manager.get_prompt(choice, audience, tone, person)
         else:
             prompt = self.context_manager.get_prompt(choice)
