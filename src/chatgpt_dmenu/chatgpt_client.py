@@ -12,6 +12,10 @@ from chatgpt_dmenu.config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
+# Models that only support default temperature (1) and don't accept
+# custom temperature values
+MODELS_WITHOUT_CUSTOM_TEMPERATURE = {"gpt-5-nano"}
+
 
 class ChatGPTClient:
     """
@@ -31,6 +35,15 @@ class ChatGPTClient:
             if isinstance(temperature_value, int | float)
             else 0.7
         )
+
+    def _supports_custom_temperature(self) -> bool:
+        """
+        Check if the current model supports custom temperature values.
+
+        Returns:
+            bool: True if the model supports custom temperature, False otherwise.
+        """
+        return self.model not in MODELS_WITHOUT_CUSTOM_TEMPERATURE
 
     def chat(self, system_prompt: str, user_input: str) -> str:
         """
@@ -53,9 +66,23 @@ class ChatGPTClient:
             logger.debug("System prompt: %s", system_prompt)
             logger.debug("User input: %s", user_input[:200])
 
-            response = self.client.chat.completions.create(
-                model=self.model, messages=messages, temperature=self.temperature
-            )
+            # Build request parameters conditionally based on model support
+            request_params: dict[str, object] = {
+                "model": self.model,
+                "messages": messages,
+            }
+
+            # Only include temperature if the model supports custom values
+            if self._supports_custom_temperature():
+                request_params["temperature"] = self.temperature
+                logger.debug("Using custom temperature: %s", self.temperature)
+            else:
+                logger.debug(
+                    "Model %s does not support custom temperature, using default (1)",
+                    self.model,
+                )
+
+            response = self.client.chat.completions.create(**request_params)
 
             logger.info("Received response from ChatGPT.")
             content = response.choices[0].message.content
