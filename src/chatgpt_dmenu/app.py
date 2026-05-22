@@ -2,7 +2,7 @@ import logging
 import sys
 import tempfile
 
-from chatgpt_dmenu.chatgpt_client import ChatGPTClient
+from chatgpt_dmenu.chatgpt_client import OpenRouterClient
 from chatgpt_dmenu.clipboard import Clipboard
 from chatgpt_dmenu.config_loader import ConfigLoader, setup_logging
 from chatgpt_dmenu.context_manager import ContextManager
@@ -30,7 +30,7 @@ class ChatGPTDMenuApp:
         setup_logging(level=log_level, logfile=log_file)
 
         self.context_manager = ContextManager(self.config)
-        self.chatgpt = ChatGPTClient(self.config)
+        self.chatgpt = OpenRouterClient(self.config)
         self.ui = DMenuUI()
         self.clipboard = Clipboard()
         self.notifier = Notifier(self.config)
@@ -75,9 +75,9 @@ class ChatGPTDMenuApp:
             main_text = output.split("---")[0].strip()
             self.clipboard.set(main_text)
             self.notifier.popup(output)
-            self.notifier.notify("ChatGPT", "Response copied to clipboard")
+            self.notifier.notify("OpenRouter", "Response copied to clipboard")
         except RuntimeError as e:
-            self.notifier.notify("ChatGPT Error", str(e))
+            self.notifier.notify("OpenRouter Error", str(e))
             error_msg = str(e)
             logger.exception("API call failed: %s", error_msg)
 
