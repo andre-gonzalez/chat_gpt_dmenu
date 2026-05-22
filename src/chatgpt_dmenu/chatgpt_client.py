@@ -12,14 +12,16 @@ from chatgpt_dmenu.config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
 # Models that only support default temperature (1) and don't accept
 # custom temperature values
-MODELS_WITHOUT_CUSTOM_TEMPERATURE = {"gpt-5-nano"}
+MODELS_WITHOUT_CUSTOM_TEMPERATURE: set[str] = set()
 
 
-class ChatGPTClient:
+class OpenRouterClient:
     """
-    Handles interaction with OpenAI's Chat API using the new SDK.
+    Handles interaction with the OpenRouter API.
 
     Args:
         config (ConfigLoader): Provides API key, model, and temperature.
@@ -27,8 +29,8 @@ class ChatGPTClient:
 
     def __init__(self, config: ConfigLoader) -> None:
         api_key = cast("str | None", config.get("api_key"))
-        self.client = OpenAI(api_key=api_key)
-        self.model = str(config.get("model", "gpt-4o"))
+        self.client = OpenAI(api_key=api_key, base_url=OPENROUTER_BASE_URL)
+        self.model = str(config.get("model", "openai/gpt-4o-mini"))
         temperature_value = config.get("temperature", 0.7)
         self.temperature = (
             float(temperature_value)
@@ -47,14 +49,14 @@ class ChatGPTClient:
 
     def chat(self, system_prompt: str, user_input: str) -> str:
         """
-        Sends a message to ChatGPT and returns the response.
+        Sends a message to OpenRouter and returns the response.
 
         Args:
             system_prompt (str): The system-level instruction for the assistant.
             user_input (str): The user message to process.
 
         Returns:
-            str: ChatGPT's response.
+            str: The model's response.
         """
         try:
             messages: list[ChatCompletionMessageParam] = [
@@ -62,7 +64,7 @@ class ChatGPTClient:
                 {"role": "user", "content": user_input},
             ]
 
-            logger.info("Sending request to ChatGPT...")
+            logger.info("Sending request to OpenRouter...")
             logger.debug("System prompt: %s", system_prompt)
             logger.debug("User input: %s", user_input[:200])
 
@@ -84,7 +86,7 @@ class ChatGPTClient:
 
             response = self.client.chat.completions.create(**request_params)
 
-            logger.info("Received response from ChatGPT.")
+            logger.info("Received response from OpenRouter.")
             content = response.choices[0].message.content
             if content is None:
                 msg = "Expected response message content to be non-None"
@@ -92,6 +94,6 @@ class ChatGPTClient:
             return content.strip()
 
         except Exception as e:
-            msg = "OpenAI API error: "
+            msg = "OpenRouter API error: "
             logger.exception("%s", msg)
             raise RuntimeError(msg) from e
